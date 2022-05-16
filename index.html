@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width">
+    <title>Jogo da Memória</title>
+    <style>
+        body,
+        html {
+            height: 100%;
+        }
+
+        body {
+            text-align: center;
+            background: rgb(245, 243, 244);
+            background: linear-gradient(90deg, rgb(84, 41, 57) 0%, rgb(110, 25, 24) 12%, rgb(27, 137, 173) 100%);
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        h1 {
+            color: white;
+        }
+
+        .jogo {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .box {
+            width: 200px;
+            border: 3px solid rgb(237, 231, 231);
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 30px;
+            margin: 15px 5px;
+            background: white;
+            background: linear-gradient(to right bottom, rgba(212, 164, 164, 0.5), rgba(225, 210, 210, 0.5));
+            /* backdrop-filter: blur(1rem); */
+        }
+
+        .box:hover {
+            background-color: rgb(30, 201, 107);
+            background: linear-gradient(to right bottom, rgba(207, 65, 13, 0.5), rgba(38, 35, 221, 0.5));
+            transition: transform 0.3s;
+            transform: rotate(360deg);
+        }
+
+        img {
+            /* width: 250px; */
+            height: 150px;
+
+        }
+
+        /* de 0px até 700px será aplcicado esse */
+        @media(max-width:700px) {
+            .box {
+                width: 120px;
+                height: 120px;
+                margin: 3px;
+            }
+
+            img {
+                height: 90px;
+
+            }
+        }
+
+        /* Entre 700px a 1000px */
+        @media(max-width:1200px) and (min-width: 700px) {
+            .box {
+                width: 140px;
+                height: 140px;
+            }
+
+            img {
+                height: 90px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="./modal.css">
+</head>
+
+<body onload="abrirModal()">
+    <h1>Jogo da Memória</h1>
+    <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            Escolher Tema:
+            <select name="opcoes" id="opcoes">
+                <option value="img-frutas">Frutas</option>
+                <option value="img-animais" selected>Animais</option>
+                <option value="img-princesa">Princesas</option>
+                <option value="img-herois">Super-Heróis</option>
+                <option value="img-xadrez">Xadrez</option>
+                <option value="img-baralho2">Cartas de Baralho</option>
+            </select>
+            </select>
+        </div>
+
+    </div>
+    <div class="jogo" id="jogo">
+        <div class="box" id="1"></div>
+        <div class="box" id="2"></div>
+        <div class="box" id="3"></div>
+        <div class="box" id="4"></div>
+        <div class="box" id="5"></div>
+        <div class="box" id="6"></div>
+        <div class="box" id="7"></div>
+        <div class="box" id="8"></div>
+        <div class="box" id="9"></div>
+        <div class="box" id="10"></div>
+        <div class="box" id="11"></div>
+        <div class="box" id="12"></div>
+    </div>
+    <script>
+        var contaJogadas = 0;
+        var idJogadas = [];
+        var todasCartasGeradas = [];
+        var par1 = []; //passarp
+        var par2 = []; //cachorro
+        var par3 = []; //hipopotamo
+        var par4 = []; //gato
+        var par5 = []; //sapo
+        var par6 = []; //maacaco
+        var temaSelecionadoModal = "";
+
+        gerarTodosPares();
+
+        document.querySelectorAll(".box").forEach(m => m.addEventListener('click', function (e) {
+            // alert("Box foi clicado");
+            //console.log(e);
+
+
+            //obtendo o id e trocando a imagem
+            var id = e.path[0].attributes.id.value;
+
+            contaJogadas++;
+            idJogadas.push(id);
+
+
+            //mostra a Imagem no campo que foi clicado
+            mostrarImagem(id);
+
+            //caso já tenha feito as duas jogadas
+            //verificar se as duas fazem parte do mesmo par
+            //se não for esconde as cartas.
+
+            if (contaJogadas == 2) {
+                console.log(idJogadas);
+
+                setTimeout(function () {
+                    //limpar as cartas jogadas
+                    var jogada1 = document.getElementById(idJogadas[0]);
+                    var jogada2 = document.getElementById(idJogadas[1]);
+
+                    if (cartasSaoIguais(idJogadas)) {
+
+                        jogada1.style.background = "white";
+                        jogada2.style.background = "white";
+
+                        // alert("As cartas são iguais");
+                        contaJogadas = 0;
+                        idJogadas = [];
+                    } else {
+                        jogada1.innerHTML = "";
+                        jogada2.innerHTML = "";
+                        contaJogadas = 0;
+                        idJogadas = [];
+                    }
+
+                }, 1000);
+            }
+        }));
+
+
+        function gerarCartaJogador() {
+            //gerar uma carta que não seja repetida;
+            let novaCarta = Math.floor(Math.random() * (12)) + 1;
+
+            while (cartasJaForamGeradas(novaCarta)) { // Enquanto o numero já existir, escolher outro
+                novaCarta = Math.floor(Math.random() * (12)) + 1;
+            }
+            todasCartasGeradas.push(novaCarta);
+            return novaCarta;
+        }
+
+        function cartasJaForamGeradas(cartaGerada) {
+            return todasCartasGeradas.indexOf(cartaGerada) >= 0;
+            //return todasCartasGeradas.includes(cartaGerada);
+        }
+
+        function gerarTodosPares() {
+            par1 = [gerarCartaJogador(), gerarCartaJogador()]; //passarp
+            par2 = [gerarCartaJogador(), gerarCartaJogador()]; //cachorro
+            par3 = [gerarCartaJogador(), gerarCartaJogador()]; //hipopotamo
+            par4 = [gerarCartaJogador(), gerarCartaJogador()]; //gato
+            par5 = [gerarCartaJogador(), gerarCartaJogador()]; //sapo
+            par6 = [gerarCartaJogador(), gerarCartaJogador()]; //maacaco
+        }
+
+        function mostrarImagem(id) {
+            let cardhtml = document.getElementById(id);
+            if (id == par1[0] || id == par1[1]) {
+                cardhtml.innerHTML = '<img src="./' + temaSelecionadoModal + '/1.png" alt="1">';
+            }
+            if (id == par2[0] || id == par2[1]) {
+                cardhtml.innerHTML = '<img src="./' + temaSelecionadoModal + '/2.png" alt="2">';
+            }
+            if (id == par3[0] || id == par3[1]) {
+                cardhtml.innerHTML = '<img src="./' + temaSelecionadoModal + '/3.png" alt="3">';
+            }
+            if (id == par4[0] || id == par4[1]) {
+                cardhtml.innerHTML = '<img src="./' + temaSelecionadoModal + '/4.png" alt="4">';
+            }
+            if (id == par5[0] || id == par5[1]) {
+                cardhtml.innerHTML = '<img src="./' + temaSelecionadoModal + '/5.png" alt="5">';
+            }
+            if (id == par6[0] || id == par6[1]) {
+                cardhtml.innerHTML = '<img src="./' + temaSelecionadoModal + '/6.png" alt="6">';
+            }
+        }
+
+        function cartasSaoIguais(cartas) {
+            var result =
+                arraysSaoIguais(cartas, par1) ||
+                arraysSaoIguais(cartas, par2) ||
+                arraysSaoIguais(cartas, par3) ||
+                arraysSaoIguais(cartas, par4) ||
+                arraysSaoIguais(cartas, par5) ||
+                arraysSaoIguais(cartas, par6);
+            console.log("cartas: " + cartas);
+            console.log("par1: " + par1)
+            console.log("Resultado se as cartas são iguais: " + result);
+            return result;
+        }
+
+        function arraysSaoIguais(cartas, par) {
+            cartas.sort();
+            par.sort();
+            return cartas[0] == par[0] && cartas[1] == par[1];
+        }
+    </script>
+    <script src="./modal.js"></script>
+</body>
+
+</html>
